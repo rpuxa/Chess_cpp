@@ -12,29 +12,31 @@ const vector<ull> WHITE_BASE = {0b1111111100000000LL,0b10000001LL,0b1000010LL,0b
 
 const vector<ull> BLACK_BASE = {0b1111111100000000LL << 40,0b10000001ULL << 56,0b1000010LL << 56,0b100100LL << 56,0b10000LL << 56,0b1000LL << 56};
 
-ull_vector all_init(ull_vector WHITE, ull_vector BLACK) {
-    ull ALL = 0;
-    ull white = 0, black = 0;
-    for (int i = 0; i < WHITE.size(); ++i) {
-        white |= WHITE[i];
-        black |= BLACK[i];
-    }
-    ALL = white | black;
+const ui fig[4] = {figures::queen,figures::rook,figures::knight,figures::bishop};
 
-    ull ALL_ROTATED_90 = 0;
+ull_vector all_init(ull_vector & white, ull_vector & black) {
+    ull ALL = 0;
+    ull white2 = 0, black2 = 0;
+    for (int i = 0; i < white.size(); ++i) {
+        white2 |= white[i];
+        black2 |= black[i];
+    }
+    ALL = white2 | black2;
+
+    ull all_rotated_90 = 0;
 
     for (int x = 0; x < 8; x++)
         for (int y = 0; y < 8; y++)
             if (((ALL >> (8 * y + x)) & 1) != 0)
-                ALL_ROTATED_90 |= 1ULL << 8 * (7 - x) + y;
+                all_rotated_90 |= 1ULL << 8 * (7 - x) + y;
 
-    ull ALL_ROTATED_45_LEFT = 0;
+    ull all_rotated_45_left = 0;
     int n = 0;
     for (int i = 0; i < 8; i++) {
         int m = 0;
         for (int j = 7 - i; j <= 7; j++) {
             if (((ALL >> j + 8 * m) & 1) != 0)
-                ALL_ROTATED_45_LEFT |= 1ULL << n;
+                all_rotated_45_left |= 1ULL << n;
             m++;
             n++;
         }
@@ -44,21 +46,21 @@ ull_vector all_init(ull_vector WHITE, ull_vector BLACK) {
         for (int j = 7 - i; j <= 7; j++) {
             if (j + 8 * m > -1 && j + 8 * m < 64 && (j + 8 * m) / 8 > (j + 8 * m) % 8) {
                 if (((ALL >> j + 8 * m) & 1) != 0)
-                    ALL_ROTATED_45_LEFT |= 1ULL << n;
+                    all_rotated_45_left |= 1ULL << n;
                 n++;
             }
             m++;
         }
     }
 
-    ull ALL_ROTATED_45_RIGHT = 0;
+    ull all_rotated_45_right = 0;
 
     n = 0;
     for (int i = 0; i < 8; i++) {
         int m = 8 * i;
         for (int j = 0; j <= i; j++) {
             if (((ALL >> j + m) & 1) != 0)
-                ALL_ROTATED_45_RIGHT |= 1ULL << n;
+                all_rotated_45_right |= 1ULL << n;
             m -= 8;
             n++;
         }
@@ -68,7 +70,7 @@ ull_vector all_init(ull_vector WHITE, ull_vector BLACK) {
         for (int j = 0; j <= i; j++) {
             if (j + m > -1 && j + m < 64 && (j + m) / 8 + (j + m) % 8 > 7) {
                 if (((ALL >> j + m) & 1) != 0)
-                    ALL_ROTATED_45_RIGHT |= 1ULL << n;
+                    all_rotated_45_right |= 1ULL << n;
                 n++;
                 if (j + m == 63)
                     goto stop;
@@ -77,7 +79,7 @@ ull_vector all_init(ull_vector WHITE, ull_vector BLACK) {
         }
     }
     stop:
-    ull_vector tmp = {ALL,ALL_ROTATED_90,ALL_ROTATED_45_LEFT,ALL_ROTATED_45_RIGHT};
+    ull_vector tmp = {ALL,all_rotated_90,all_rotated_45_left,all_rotated_45_right};
     return tmp;
 }
 
@@ -109,7 +111,7 @@ Bitboard make_bitboard_nullMove_from(Bitboard bitboard){
     return Bitboard(bitboard.white,bitboard.black,0ULL,bitboard.castle,bitboard.all,bitboard.lastMove);
 }
 
-Bitboard::Bitboard(ull_vector white,ull_vector black,ull pass,bool castle,ull_vector all,bool lastMove)
+Bitboard::Bitboard(ull_vector & white,ull_vector & black,ull pass,bool castle,ull_vector & all,bool lastMove)
             :white(white), black(black), pass(pass), castle(castle), all(all), lastMove(lastMove) {}
 
     void Bitboard::add(uint_vector & moves,ui pos, ull mask,ui figureMove, bool promotion) {
@@ -119,8 +121,7 @@ Bitboard::Bitboard(ull_vector white,ull_vector black,ull pass,bool castle,ull_ve
                     if (!promotion) {
                         moves.push_back(((((pos << 6) + i) << 4) + figureMove) << 3);
                     } else {
-                        const ui figures[4] = {figures::queen,figures::rook,figures::knight,figures::bishop};
-                        for (ui figure :figures)
+                        for (ui figure :fig)
                             moves.push_back((((((pos << 6) + i) << 4) + figureMove) << 3) + figure);
                     }
     }

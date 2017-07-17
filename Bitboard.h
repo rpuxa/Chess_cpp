@@ -23,7 +23,7 @@ public:
     bool lastMove;
 
 public:
-    Bitboard(ull_vector white,ull_vector black,ull pass,bool castle,ull_vector all,bool lastMove);
+    Bitboard(ull_vector &white,ull_vector & black,ull pass,bool castle,ull_vector & all,bool lastMove);
 
 
     void add(uint_vector & moves,ui pos, ull mask,ui figureMove, bool promotion);
